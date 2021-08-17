@@ -24,10 +24,10 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-if ! command -v aria2c &> /dev/null ; then
-    echo "Error: aria2c could not be found. Please install aria2c (sudo apt install aria2)."
-    exit 1
-fi
+# if ! command -v aria2c &> /dev/null ; then
+#     echo "Error: aria2c could not be found. Please install aria2c (sudo apt install aria2)."
+#     exit 1
+# fi
 
 DOWNLOAD_DIR="$1"
 ROOT_DIR="${DOWNLOAD_DIR}/mgnify"
@@ -36,8 +36,9 @@ ROOT_DIR="${DOWNLOAD_DIR}/mgnify"
 SOURCE_URL="https://storage.googleapis.com/alphafold-databases/casp14_versions/mgy_clusters_2018_12.fa.gz"
 BASENAME=$(basename "${SOURCE_URL}")
 
-mkdir --parents "${ROOT_DIR}"
-aria2c "${SOURCE_URL}" --dir="${ROOT_DIR}"
-pushd "${ROOT_DIR}"
-gunzip "${ROOT_DIR}/${BASENAME}"
-popd
+mkdir -p "${ROOT_DIR}"
+curl -XGET "${SOURCE_URL}" | gunzip > "${ROOT_DIR}/mgy_clusters_2018_12.fa"
+# aria2c "${SOURCE_URL}" --dir="${ROOT_DIR}"
+# pushd "${ROOT_DIR}"
+# gunzip "${ROOT_DIR}/${BASENAME}"
+# popd

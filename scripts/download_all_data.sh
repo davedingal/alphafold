@@ -24,10 +24,10 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-if ! command -v aria2c &> /dev/null ; then
-    echo "Error: aria2c could not be found. Please install aria2c (sudo apt install aria2)."
-    exit 1
-fi
+# if ! command -v aria2c &> /dev/null ; then
+#     echo "Error: aria2c could not be found. Please install aria2c (sudo apt install aria2)."
+#     exit 1
+# fi
 
 DOWNLOAD_DIR="$1"
 DOWNLOAD_MODE="${2:-full_dbs}" # Default mode to full_dbs.
