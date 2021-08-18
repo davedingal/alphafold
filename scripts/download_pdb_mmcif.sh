@@ -24,11 +24,6 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-# if ! command -v aria2c &> /dev/null ; then
-#     echo "Error: aria2c could not be found. Please install aria2c (sudo apt install aria2)."
-#     exit 1
-# fi
-
 if ! command -v rsync &> /dev/null ; then
     echo "Error: rsync could not be found. Please install rsync."
     exit 1
@@ -38,6 +33,11 @@ DOWNLOAD_DIR="$1"
 ROOT_DIR="${DOWNLOAD_DIR}/pdb_mmcif"
 RAW_DIR="${ROOT_DIR}/raw"
 MMCIF_DIR="${ROOT_DIR}/mmcif_files"
+
+if [ -d "${ROOT_DIR}" ]; then
+	echo "Skipping."
+	exit 0
+fi
 
 echo "Running rsync to fetch all mmCIF files (note that the rsync progress estimate might be inaccurate)..."
 mkdir -p "${ROOT_DIR}" "${RAW_DIR}"
@@ -58,5 +58,4 @@ done
 # Delete empty download directory structure.
 find "${RAW_DIR}" -type d -empty -delete
 
-# aria2c "ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat" --dir="${ROOT_DIR}"
 curl -XGET "ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat" > "${ROOT_DIR}/obsolete.dat"
