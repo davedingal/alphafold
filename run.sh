@@ -1,4 +1,11 @@
 #!/bin/bash
+#SBATCH -c 12 # Number of cores requested
+#SBATCH -t 60 # Runtime in minutes
+#SBATCH -p serial_requeue # Partition to submit to
+#SBATCH --mem=85000 # Memory per node in MB (see also --mem-per-cpu)
+#SBATCH --open-mode=append # Append when writing files
+#SBATCH -o alphafold_%j.out # Standard out goes to this file
+#SBATCH -e alphafold_%j.err # Standard err goes to this filehostname
 
 DATA_DIR=$1
 
