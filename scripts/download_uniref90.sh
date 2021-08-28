@@ -30,8 +30,8 @@ SOURCE_URL="ftp://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref90/uniref90
 BASENAME=$(basename "${SOURCE_URL}")
 
 if [ -d "${ROOT_DIR}" ]; then
-	echo "Skipping."
-	exit 0
+  echo "Skipping."
+  exit 0
 fi
 
 mkdir -p "${ROOT_DIR}"

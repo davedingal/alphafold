@@ -30,8 +30,8 @@ SOURCE_URL="https://storage.googleapis.com/alphafold-databases/reduced_dbs/bfd-f
 BASENAME=$(basename "${SOURCE_URL}")
 
 if [ -d "${ROOT_DIR}" ]; then
-	echo "Skipping."
-	exit 0
+  echo "Skipping."
+  exit 0
 fi
 
 mkdir -p "${ROOT_DIR}"

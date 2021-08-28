@@ -30,8 +30,8 @@ SOURCE_URL="https://storage.googleapis.com/alphafold/alphafold_params_2021-07-14
 BASENAME=$(basename "${SOURCE_URL}")
 
 if [ -d "${ROOT_DIR}" ]; then
-	echo "Skipping."
-	exit 0
+  echo "Skipping."
+  exit 0
 fi
 
 mkdir -p "${ROOT_DIR}"

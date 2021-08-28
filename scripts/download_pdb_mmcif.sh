@@ -35,8 +35,8 @@ RAW_DIR="${ROOT_DIR}/raw"
 MMCIF_DIR="${ROOT_DIR}/mmcif_files"
 
 if [ -d "${MMCIF_DIR}" ]; then
-	echo "Skipping."
-	exit 0
+  echo "Skipping."
+  exit 0
 fi
 
 echo "Running rsync to fetch all mmCIF files (note that the rsync progress estimate might be inaccurate)..."
