@@ -34,7 +34,7 @@ ROOT_DIR="${DOWNLOAD_DIR}/pdb_mmcif"
 RAW_DIR="${ROOT_DIR}/raw"
 MMCIF_DIR="${ROOT_DIR}/mmcif_files"
 
-if [ -d "${ROOT_DIR}" ]; then
+if [ -d "${MMCIF_DIR}" ]; then
 	echo "Skipping."
 	exit 0
 fi
