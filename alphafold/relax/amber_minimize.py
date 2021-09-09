@@ -26,10 +26,10 @@ from alphafold.relax import cleanup
 from alphafold.relax import utils
 import ml_collections
 import numpy as np
-from simtk import openmm
+import openmm
 from simtk import unit
-from simtk.openmm import app as openmm_app
-from simtk.openmm.app.internal.pdbstructure import PdbStructure
+from openmm import app as openmm_app
+from openmm.app.internal.pdbstructure import PdbStructure
 
 
 ENERGY = unit.kilocalories_per_mole
