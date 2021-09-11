@@ -27,7 +27,6 @@ fi
 DOWNLOAD_DIR="$1"
 ROOT_DIR="${DOWNLOAD_DIR}/pdb70"
 SOURCE_URL="http://wwwuser.gwdg.de/~compbiol/data/hhsuite/databases/hhsuite_dbs/old-releases/pdb70_from_mmcif_200401.tar.gz"
-BASENAME=$(basename "${SOURCE_URL}")
 
 if [ -d "${ROOT_DIR}" ]; then
   echo "Skipping."
@@ -35,4 +34,4 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-curl -XGET "${SOURCE_URL}" | tar xzf /dev/stdin -C "${ROOT_DIR}"
+python download.py -h wwwuser.gwdg.de --uri /~compbiol/data/hhsuite/databases/hhsuite_dbs/old-releases/pdb70_from_mmcif_200401.tar.gz --ssl | tar xzf /dev/stdin -C "${ROOT_DIR}"

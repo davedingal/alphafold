@@ -35,4 +35,4 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-curl -XGET "${SOURCE_URL}" | tar xf /dev/stdin -C "${ROOT_DIR}"
+python download.py -h storage.googleapis.com --ssl --uri /alphafold/alphafold_params_2021-07-14.tar | tar xf /dev/stdin -C "${ROOT_DIR}"

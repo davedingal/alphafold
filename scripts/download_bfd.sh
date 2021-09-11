@@ -37,4 +37,4 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-curl -XGET "${SOURCE_URL}" | tar xzf /dev/stdin -C "${ROOT_DIR}"
+python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt.tar.gz --ssl | tar xzf /dev/stdin -C "${ROOT_DIR}"

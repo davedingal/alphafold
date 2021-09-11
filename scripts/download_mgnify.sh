@@ -37,4 +37,4 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-curl -XGET "${SOURCE_URL}" | gunzip > "${ROOT_DIR}/mgy_clusters_2018_12.fa"
+python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/mgy_clusters_2018_12.fa.gz --ssl | gunzip > "${ROOT_DIR}/mgy_clusters_2018_12.fa"

@@ -35,4 +35,4 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-curl -XGET "${SOURCE_URL}" | gunzip > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"
+python download.py --ssl -h storage.googleapis.com --uri /alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz | gunzip > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"
