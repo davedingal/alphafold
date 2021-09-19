@@ -118,7 +118,7 @@ class DataPipeline:
     self.mgnify_max_hits = mgnify_max_hits
     self.uniref_max_hits = uniref_max_hits
 
-  def run_jackhmmer_uniref90(self, input_fasta_path: str):
+  def run_jackhmmer_uniref90(self, input_fasta_path: str, msa_output_dir: str):
     self.jackhmmer_uniref90_result = self.jackhmmer_uniref90_runner.query(input_fasta_path)[0]
     uniref90_msa_as_a3m = parsers.convert_stockholm_to_a3m(self.jackhmmer_uniref90_result['sto'], max_sequences=self.uniref_max_hits)
     hhsearch_result = self.hhsearch_pdb70_runner.query(uniref90_msa_as_a3m)
@@ -133,9 +133,9 @@ class DataPipeline:
 
     self.hhsearch_hits = parsers.parse_hhr(hhsearch_result)
 
-    uniref90_msa, uniref90_deletion_matrix, _ = parsers.parse_stockholm(self.jackhmmer_uniref90_result['sto'])
+    self.uniref90_msa, self.uniref90_deletion_matrix, _ = parsers.parse_stockholm(self.jackhmmer_uniref90_result['sto'])
 
-  def run_jackhmmer_mgnify(self, input_fasta_path: str):
+  def run_jackhmmer_mgnify(self, input_fasta_path: str, msa_output_dir: str):
     self.jackhmmer_mgnify_result = self.jackhmmer_mgnify_runner.query(input_fasta_path)[0]
 
     mgnify_out_path = os.path.join(msa_output_dir, 'mgnify_hits.sto')
@@ -172,7 +172,7 @@ class DataPipeline:
     input_description = input_descs[0]
     num_res = len(input_sequence)
 
-    uniref90_thread = threading.Thread(target=self.run_jackhmmer_uniref90, srgs=(input_fasta_path, msa_output_dir))
+    uniref90_thread = threading.Thread(target=self.run_jackhmmer_uniref90, args=(input_fasta_path, msa_output_dir))
     uniref90_thread.start()
 
     mgnify_thread = threading.Thread(target=self.run_jackhmmer_mgnify, args=(input_fasta_path, msa_output_dir))
@@ -201,12 +201,12 @@ class DataPipeline:
         num_res=num_res)
 
     msa_features = make_msa_features(
-        msas=(uniref90_msa, self.bfd_msa, mgnify_msa),
-        deletion_matrices=(uniref90_deletion_matrix,
+        msas=(self.uniref90_msa, self.bfd_msa, mgnify_msa),
+        deletion_matrices=(self.uniref90_deletion_matrix,
                            self.bfd_deletion_matrix,
                            mgnify_deletion_matrix))
 
-    logging.info('Uniref90 MSA size: %d sequences.', len(uniref90_msa))
+    logging.info('Uniref90 MSA size: %d sequences.', len(self.uniref90_msa))
     logging.info('BFD MSA size: %d sequences.', len(bfd_msa))
     logging.info('MGnify MSA size: %d sequences.', len(mgnify_msa))
     logging.info('Final (deduplicated) MSA size: %d sequences.',
