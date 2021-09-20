@@ -207,7 +207,7 @@ class DataPipeline:
                            mgnify_deletion_matrix))
 
     logging.info('Uniref90 MSA size: %d sequences.', len(self.uniref90_msa))
-    logging.info('BFD MSA size: %d sequences.', len(bfd_msa))
+    logging.info('BFD MSA size: %d sequences.', len(self.bfd_msa))
     logging.info('MGnify MSA size: %d sequences.', len(mgnify_msa))
     logging.info('Final (deduplicated) MSA size: %d sequences.',
                  msa_features['num_alignments'][0])
