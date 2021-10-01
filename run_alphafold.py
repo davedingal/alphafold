@@ -123,16 +123,21 @@ def predict_structure(
     os.makedirs(msa_output_dir)
 
   # Get features.
-  t_0 = time.time()
-  feature_dict = data_pipeline.process(
-      input_fasta_path=fasta_path,
-      msa_output_dir=msa_output_dir)
-  timings['features'] = time.time() - t_0
-
-  # Write out features as a pickled dictionary.
   features_output_path = os.path.join(output_dir, 'features.pkl')
-  with open(features_output_path, 'wb') as f:
-    pickle.dump(feature_dict, f, protocol=4)
+  feature_dict = None
+  try:
+    with open(features_output_path, 'rb') as f:
+      feature_dict = pickle.load(f)
+  except:
+    t_0 = time.time()
+    feature_dict = data_pipeline.process(
+        input_fasta_path=fasta_path,
+        msa_output_dir=msa_output_dir)
+    timings['features'] = time.time() - t_0
+
+    # Write out features as a pickled dictionary.
+    with open(features_output_path, 'wb') as f:
+      pickle.dump(feature_dict, f, protocol=4)
 
   relaxed_pdbs = {}
   plddts = {}
