@@ -148,12 +148,12 @@ def predict_structure(
     try:
       with open(relaxed_output_path, 'r') as f:
         f.close()
-        logging.info(f'{model_name} already processed.  Skipping.')
+        logging.info('%s already processed.  Skipping.', model_name)
         continue
     except:
+      logging.info('Running model %s', model_name)
       # nothing to do
 
-    logging.info('Running model %s', model_name)
     t_0 = time.time()
     processed_feature_dict = model_runner.process_features(
         feature_dict, random_seed=random_seed)
