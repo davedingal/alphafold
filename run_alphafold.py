@@ -188,7 +188,7 @@ def predict_structure(
     unrelaxed_protein = None
     try:
       with open(unrelaxed_pdb_path, 'r') as f:
-        unrelaxed_protein.read()
+        unrelaxed_protein = f.read()
     except:
       # Add the predicted LDDT in the b-factor column.
       # Note that higher predicted LDDT value means higher model confidence.
