@@ -179,6 +179,11 @@ def predict_structure(
       with open(result_output_path, 'wb') as f:
         pickle.dump(prediction_result, f, protocol=4)
 
+      if benchmark:
+        t_0 = time.time()
+        model_runner.predict(processed_feature_dict)
+        timings[f'predict_benchmark_{model_name}'] = time.time() - t_0
+
     # Get mean pLDDT confidence metric.
     plddt = prediction_result['plddt']
     plddts[model_name] = np.mean(plddt)
