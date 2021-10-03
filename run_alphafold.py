@@ -144,46 +144,62 @@ def predict_structure(
 
   # Run the models.
   for model_name, model_runner in model_runners.items():
+    relaxed_output_path = os.path.join(output_dir, f'relaxed_{model_name}.pdb')
+    try:
+      with open(relaxed_output_path, 'r') as f:
+        f.close()
+        logging.info(f'{model_name} already processed.  Skipping.')
+        continue
+    except:
+      # nothing to do
+
     logging.info('Running model %s', model_name)
     t_0 = time.time()
     processed_feature_dict = model_runner.process_features(
         feature_dict, random_seed=random_seed)
     timings[f'process_features_{model_name}'] = time.time() - t_0
 
-    t_0 = time.time()
-    prediction_result = model_runner.predict(processed_feature_dict)
-    t_diff = time.time() - t_0
-    timings[f'predict_and_compile_{model_name}'] = t_diff
-    logging.info(
-        'Total JAX model %s predict time (includes compilation time, see --benchmark): %.0f?',
-        model_name, t_diff)
-
-    if benchmark:
+    # prediction_result
+    result_output_path = os.path.join(output_dir, f'result_{model_name}.pkl')
+    prediction_result = None
+    try:
+      with open(result_output_path, 'rb') as f:
+        logging.info('Using existing prediction result.')
+        prediction_result = pickle.load(f)
+    except:
       t_0 = time.time()
-      model_runner.predict(processed_feature_dict)
-      timings[f'predict_benchmark_{model_name}'] = time.time() - t_0
+      prediction_result = model_runner.predict(processed_feature_dict)
+      t_diff = time.time() - t_0
+      timings[f'predict_and_compile_{model_name}'] = t_diff
+      logging.info(
+          'Total JAX model %s predict time (includes compilation time, see --benchmark): %.0f?',
+          model_name, t_diff)
+
+      # Save the model outputs.
+      with open(result_output_path, 'wb') as f:
+        pickle.dump(prediction_result, f, protocol=4)
 
     # Get mean pLDDT confidence metric.
     plddt = prediction_result['plddt']
     plddts[model_name] = np.mean(plddt)
 
-    # Save the model outputs.
-    result_output_path = os.path.join(output_dir, f'result_{model_name}.pkl')
-    with open(result_output_path, 'wb') as f:
-      pickle.dump(prediction_result, f, protocol=4)
-
-    # Add the predicted LDDT in the b-factor column.
-    # Note that higher predicted LDDT value means higher model confidence.
-    plddt_b_factors = np.repeat(
-        plddt[:, None], residue_constants.atom_type_num, axis=-1)
-    unrelaxed_protein = protein.from_prediction(
-        features=processed_feature_dict,
-        result=prediction_result,
-        b_factors=plddt_b_factors)
 
     unrelaxed_pdb_path = os.path.join(output_dir, f'unrelaxed_{model_name}.pdb')
-    with open(unrelaxed_pdb_path, 'w') as f:
-      f.write(protein.to_pdb(unrelaxed_protein))
+    unrelaxed_protein = None
+    try:
+      with open(unrelaxed_pdb_path, 'r') as f:
+        unrelaxed_protein.read()
+    except:
+      # Add the predicted LDDT in the b-factor column.
+      # Note that higher predicted LDDT value means higher model confidence.
+      plddt_b_factors = np.repeat(plddt[:, None], residue_constants.atom_type_num, axis=-1)
+      unrelaxed_protein = protein.from_prediction(
+          features=processed_feature_dict,
+          result=prediction_result,
+          b_factors=plddt_b_factors)
+
+      with open(unrelaxed_pdb_path, 'w') as f:
+        f.write(protein.to_pdb(unrelaxed_protein))
 
     # Relax the prediction.
     t_0 = time.time()
@@ -193,7 +209,6 @@ def predict_structure(
     relaxed_pdbs[model_name] = relaxed_pdb_str
 
     # Save the relaxed PDB.
-    relaxed_output_path = os.path.join(output_dir, f'relaxed_{model_name}.pdb')
     with open(relaxed_output_path, 'w') as f:
       f.write(relaxed_pdb_str)
 
