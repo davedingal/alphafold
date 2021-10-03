@@ -189,22 +189,17 @@ def predict_structure(
     plddts[model_name] = np.mean(plddt)
 
 
-    unrelaxed_pdb_path = os.path.join(output_dir, f'unrelaxed_{model_name}.pdb')
-    unrelaxed_protein = None
-    try:
-      with open(unrelaxed_pdb_path, 'r') as f:
-        unrelaxed_protein = f.read()
-    except:
-      # Add the predicted LDDT in the b-factor column.
-      # Note that higher predicted LDDT value means higher model confidence.
-      plddt_b_factors = np.repeat(plddt[:, None], residue_constants.atom_type_num, axis=-1)
-      unrelaxed_protein = protein.from_prediction(
-          features=processed_feature_dict,
-          result=prediction_result,
-          b_factors=plddt_b_factors)
+    # Add the predicted LDDT in the b-factor column.
+    # Note that higher predicted LDDT value means higher model confidence.
+    plddt_b_factors = np.repeat(plddt[:, None], residue_constants.atom_type_num, axis=-1)
+    unrelaxed_protein = protein.from_prediction(
+        features=processed_feature_dict,
+        result=prediction_result,
+        b_factors=plddt_b_factors)
 
-      with open(unrelaxed_pdb_path, 'w') as f:
-        f.write(protein.to_pdb(unrelaxed_protein))
+    unrelaxed_pdb_path = os.path.join(output_dir, f'unrelaxed_{model_name}.pdb')
+    with open(unrelaxed_pdb_path, 'w') as f:
+      f.write(protein.to_pdb(unrelaxed_protein))
 
     # Relax the prediction.
     t_0 = time.time()
