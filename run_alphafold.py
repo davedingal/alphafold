@@ -209,7 +209,7 @@ def predict_structure(
 
   # ensure that all plddts have been loaded before ranking the outputs
   for model_name, model_runner in model_runners.items():
-    if plddts[model_name] != None:
+    if model_name in plddts:
       continue
 
     logging.info('Loading plddt data for %s', model_name)
