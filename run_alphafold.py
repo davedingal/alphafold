@@ -139,7 +139,6 @@ def predict_structure(
     with open(features_output_path, 'wb') as f:
       pickle.dump(feature_dict, f, protocol=4)
 
-  relaxed_pdbs = {}
   plddts = {}
 
   # Run the models.
@@ -171,9 +170,7 @@ def predict_structure(
       prediction_result = model_runner.predict(processed_feature_dict)
       t_diff = time.time() - t_0
       timings[f'predict_and_compile_{model_name}'] = t_diff
-      logging.info(
-          'Total JAX model %s predict time (includes compilation time, see --benchmark): %.0f?',
-          model_name, t_diff)
+      logging.info('Total JAX model %s predict time (includes compilation time, see --benchmark): %.0f?', model_name, t_diff)
 
       # Save the model outputs.
       with open(result_output_path, 'wb') as f:
@@ -206,20 +203,31 @@ def predict_structure(
     relaxed_pdb_str, _, _ = amber_relaxer.process(prot=unrelaxed_protein)
     timings[f'relax_{model_name}'] = time.time() - t_0
 
-    relaxed_pdbs[model_name] = relaxed_pdb_str
-
     # Save the relaxed PDB.
     with open(relaxed_output_path, 'w') as f:
       f.write(relaxed_pdb_str)
 
+  # ensure that all plddts have been loaded before ranking the outputs
+  for model_name, model_runner in model_runners.items():
+    if plddts[model_name] != None:
+      continue
+
+    logging.info('Loading plddt data for %s', model_name)
+    result_output_path = os.path.join(output_dir, f'result_{model_name}.pkl')
+    with open(result_output_path, 'rb') as f:
+      prediction_result = pickle.load(f)
+      plddts[model_name] = np.mean(prediction_result['plddt'])
+
   # Rank by pLDDT and write out relaxed PDBs in rank order.
   ranked_order = []
-  for idx, (model_name, _) in enumerate(
-      sorted(plddts.items(), key=lambda x: x[1], reverse=True)):
+  for idx, (model_name, _) in enumerate(sorted(plddts.items(), key=lambda x: x[1], reverse=True)):
     ranked_order.append(model_name)
+
     ranked_output_path = os.path.join(output_dir, f'ranked_{idx}.pdb')
-    with open(ranked_output_path, 'w') as f:
-      f.write(relaxed_pdbs[model_name])
+    relaxed_output_path = os.path.join(output_dir, f'relaxed_{model_name}.pdb')
+    with open(relaxed_output_path, 'r') as f_in:
+      with open(ranked_output_path, 'w') as f_out:
+        f_out.write(f_in.read())
 
   ranking_output_path = os.path.join(output_dir, 'ranking_debug.json')
   with open(ranking_output_path, 'w') as f:
@@ -237,12 +245,9 @@ def main(argv):
     raise app.UsageError('Too many command-line arguments.')
 
   use_small_bfd = FLAGS.preset == 'reduced_dbs'
-  _check_flag('small_bfd_database_path', FLAGS.preset,
-              should_be_set=use_small_bfd)
-  _check_flag('bfd_database_path', FLAGS.preset,
-              should_be_set=not use_small_bfd)
-  _check_flag('uniclust30_database_path', FLAGS.preset,
-              should_be_set=not use_small_bfd)
+  _check_flag('small_bfd_database_path', FLAGS.preset, should_be_set=use_small_bfd)
+  _check_flag('bfd_database_path', FLAGS.preset, should_be_set=not use_small_bfd)
+  _check_flag('uniclust30_database_path', FLAGS.preset, should_be_set=not use_small_bfd)
 
   if FLAGS.preset in ('reduced_dbs', 'full_dbs'):
     num_ensemble = 1
@@ -284,8 +289,7 @@ def main(argv):
     model_runner = model.RunModel(model_config, model_params)
     model_runners[model_name] = model_runner
 
-  logging.info('Have %d models: %s', len(model_runners),
-               list(model_runners.keys()))
+  logging.info('Have %d models: %s', len(model_runners), list(model_runners.keys()))
 
   amber_relaxer = relax.AmberRelaxation(
       max_iterations=RELAX_MAX_ITERATIONS,
