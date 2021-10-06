@@ -148,7 +148,7 @@ class DataPipeline:
     mgnify_out_path = os.path.join(msa_output_dir, 'mgnify_hits.sto')
     try:
       with open(mgnify_out_path, 'r') as f:
-        self.jackhmmer_mgnify_result_sto = f.read(0)
+        self.jackhmmer_mgnify_result_sto = f.read()
     except:
       jackhmmer_mgnify_result = self.jackhmmer_mgnify_runner.query(input_fasta_path)[0]
       self.jackhmmer_mgnify_result_sto = jackhmmer_mgnify_result['sto']
