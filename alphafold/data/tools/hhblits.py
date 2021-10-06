@@ -135,7 +135,7 @@ class HHBlits:
 
       if retcode:
         # Logs have a 15k character limit, so log HHblits error line by line.
-        logging.error('HHblits failed. HHblits stderr begin:')
+        logging.error('HHblits failed with exit code %d. HHblits stderr begin:', retcode)
         for error_line in stderr.decode('utf-8').splitlines():
           if error_line.strip():
             logging.error(error_line.strip())
