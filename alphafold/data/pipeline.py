@@ -183,7 +183,7 @@ class DataPipeline:
         with open(bfd_out_path, 'w') as f:
           f.write(hhblits_bfd_uniclust_result['a3m'])
 
-      self.bfd_msa, self.bfd_deletion_matrix = parsers.parse_a3m(hhblits_bfd_uniclust_result['a3m'])
+      self.bfd_msa, self.bfd_deletion_matrix = parsers.parse_a3m(hhblits_bfd_uniclust_result_a3m)
 
   def process(self, input_fasta_path: str, msa_output_dir: str) -> FeatureDict:
     """Runs alignment tools on the input sequence and creates features."""
