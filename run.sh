@@ -1,7 +1,8 @@
 #!/bin/bash
 #SBATCH -c 12 # Number of cores requested
 #SBATCH -t 60 # Runtime in minutes
-#SBATCH -p serial_requeue # Partition to submit to
+#SBATCH -p gpu_requeue # Partition to submit to
+#SBATCH --gres=gpu:1
 #SBATCH --mem=85000 # Memory per node in MB (see also --mem-per-cpu)
 #SBATCH --open-mode=append # Append when writing files
 #SBATCH -o alphafold_%j.out # Standard out goes to this file
@@ -9,10 +10,14 @@
 
 echo "Running on host $(hostname)"
 echo "Loading anaconda"
-module load Anaconda3/2020.11
+#module load Anaconda3/2020.11
 echo "Initializing anaconda environment"
-conda init bash
-conda activate alphafold_env
+#conda init bash
+#conda activate alphafold_env
+
+echo "Python binary: $(which python)"
+
+env > env2.txt
 
 DATA_DIR=$1
 

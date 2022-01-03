@@ -34,28 +34,32 @@ ROOT_DIR="${DOWNLOAD_DIR}/pdb_mmcif"
 RAW_DIR="${ROOT_DIR}/raw"
 MMCIF_DIR="${ROOT_DIR}/mmcif_files"
 
-if [ -d "${MMCIF_DIR}" ]; then
-  echo "Skipping."
-  exit 0
+if ! [ -f "${MMCIF_DIR}/download_completed" ]; then
+	echo "Running rsync to fetch all mmCIF files (note that the rsync progress estimate might be inaccurate)..."
+	mkdir -p "${ROOT_DIR}" "${RAW_DIR}"
+	rsync --recursive --links --perms --times --compress --info=progress2 --delete --port=33444 \
+	  rsync.rcsb.org::ftp_data/structures/divided/mmCIF/ \
+	  "${RAW_DIR}"
+
+	echo "Unzipping all mmCIF files..."
+	find "${RAW_DIR}/" -type f -iname "*.gz" -exec gunzip {} +
+
+	echo "Flattening all mmCIF files..."
+	mkdir -p "${MMCIF_DIR}"
+	find "${RAW_DIR}" -type d -empty -delete  # Delete empty directories.
+	for subdir in "${RAW_DIR}"/*; do
+	  mv "${subdir}/"*.cif "${MMCIF_DIR}"
+	done
+
+	# Delete empty download directory structure.
+	find "${RAW_DIR}" -type d -empty -delete
+
+	touch "${MMCIF_DIR}/download_completed"
+else
+	echo "Skipping mmcif rsync."
 fi
 
-echo "Running rsync to fetch all mmCIF files (note that the rsync progress estimate might be inaccurate)..."
-mkdir -p "${ROOT_DIR}" "${RAW_DIR}"
-rsync --recursive --links --perms --times --compress --info=progress2 --delete --port=33444 \
-  rsync.rcsb.org::ftp_data/structures/divided/mmCIF/ \
-  "${RAW_DIR}"
 
-echo "Unzipping all mmCIF files..."
-find "${RAW_DIR}/" -type f -iname "*.gz" -exec gunzip {} +
-
-echo "Flattening all mmCIF files..."
-mkdir -p "${MMCIF_DIR}"
-find "${RAW_DIR}" -type d -empty -delete  # Delete empty directories.
-for subdir in "${RAW_DIR}"/*; do
-  mv "${subdir}/"*.cif "${MMCIF_DIR}"
-done
-
-# Delete empty download directory structure.
-find "${RAW_DIR}" -type d -empty -delete
-
-curl -XGET "ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat" > "${ROOT_DIR}/obsolete.dat"
+if ! [ -f "${ROOT_DIR}/obsolete.dat" ]; then
+  curl -XGET "ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat" > "${ROOT_DIR}/obsolete.dat"
+fi
