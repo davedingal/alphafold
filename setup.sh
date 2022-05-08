@@ -2,7 +2,7 @@
 
 set -e -o pipefail
 
-pushd ~
+pushd ${HOME}
 mkdir -p .local/
 popd
 
@@ -15,7 +15,9 @@ pushd /tmp/alphafold_build/
 if ! which hmmstat 2>&1 > /dev/null; then
 	mkdir -p hmmer
 	pushd hmmer/
-	curl -XGET http://eddylab.org/software/hmmer/hmmer.tar.gz | tar xzf /dev/stdin -C ./
+	curl -XGET http://eddylab.org/software/hmmer/hmmer.tar.gz | tar xzf - -C ./
+	# cd into the directory that hmmer was untarred to.
+	cd $(ls -1)
 	./configure --prefix=${HOME}/.local/
 	make -j 8
 	make install
@@ -34,7 +36,9 @@ if ! which hhblits 2>&1 > /dev/null; then
 fi
 
 if ! which kalign 2>&1 > /dev/null; then
-	git clone https://github.com/HDFGroup/hdf5.git hdf5
+	if ! [ -d hdf5 ]; then
+		git clone https://github.com/HDFGroup/hdf5.git hdf5
+	fi
 	pushd hdf5
 	./autogen.sh
 	./configure --prefix=${HOME}/.local/
@@ -42,15 +46,19 @@ if ! which kalign 2>&1 > /dev/null; then
 	make install
 	popd
 
-	git clone https://github.com/TimoLassmann/tldevel.git tldevel
+	if ! [ -d tldevel ]; then
+		git clone https://github.com/TimoLassmann/tldevel.git tldevel
+	fi
 	pushd tldevel
 	./autogen.sh
-	./configure --prefix=${HOME}/.local/ --width-hdf5
+	./configure --prefix=${HOME}/.local/ --with-hdf5
 	make -j 8
 	make install
 	popd
 
-	git clone https://github.com/TimoLassmann/kalign.git kalign/
+	if ! [ -d kalign ]; then
+		git clone https://github.com/TimoLassmann/kalign.git kalign/
+	fi
 	pushd kalign/
 	./autogen.sh
 	./configure --prefix=${HOME}/.local/
