@@ -2,12 +2,14 @@
 
 set -e -o pipefail
 
-pushd ${HOME}
-mkdir -p .local/
-popd
+mkdir -p $HOME/.local/
+
+wget -q -P ./alphafold/common/ https://git.scicore.unibas.ch/schwede/openstructure/-/raw/7102c63615b64735c4941278d92b554ec94415f8/modules/mol/alg/src/stereo_chemical_props.txt
 
 mkdir -p /tmp/alphafold_build
 pushd /tmp/alphafold_build/
+
+export PATH=${HOME}/.local/bin/:$PATH
 
 # module load gcc/10.????
 
@@ -67,8 +69,8 @@ if ! which kalign 2>&1 > /dev/null; then
 	popd
 fi
 
-echo "This software requires python 3.7 or later to run.  Please make sure your version of python is new enough before proceeding."
-read test
+#echo "This software requires python 3.7 or later to run.  Please make sure your version of python is new enough before proceeding."
+#read test
 
 # to build ptyhon using a locally built (and installed) copy of libffi, set CFLAGS, CPPFLAGS, LDFLAGS, and LD_LIBRARY_PATH appropriately before using pyenv to install a new version of python
 
@@ -84,4 +86,20 @@ read test
 # install libffi from source
 # CONFIGURE_OPTS="--with-system-ffi" pyenv install 3.9.6
 # pyenv global 3.9.6
-# pip install -r requirements.txt
+
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+bash ./Miniconda3-latest-Linux-x86_64.sh -b -p ~/.local/conda/
+rm ./Miniconda3-latest-Linux-x86_64.sh
+
+export PATH=$HOME/.local/conda/bin/:$PATH
+export PYTHONPATH=$HOME/.local/conda:$PYTHONPATH
+
+conda update -qy conda
+conda install -y -c conda-forge openmm=7.5.1 cudatoolkit=11.4 pdbfixer
+
+pip3 install --upgrade pip
+pip3 install -r requirements.txt
+#pip3 install --upgrade jax jaxlib==0.1.69+cuda110 -f https://storage.googleapis.com/jax-releases/jax_releases.html
+
+#pushd $HOME/.local/lib/python3.9/site-packages/
+#patch -p0 < ${WORK}
