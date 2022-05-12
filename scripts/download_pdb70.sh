@@ -25,6 +25,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 DOWNLOAD_DIR="$1"
+TAR_FILE="$2/pdb70.tar.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/pdb70"
 SOURCE_URL="http://wwwuser.gwdg.de/~compbiol/data/hhsuite/databases/hhsuite_dbs/old-releases/pdb70_from_mmcif_200401.tar.gz"
 
@@ -34,4 +35,10 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-python download.py -h wwwuser.gwdg.de --uri /~compbiol/data/hhsuite/databases/hhsuite_dbs/old-releases/pdb70_from_mmcif_200401.tar.gz --ssl | tar xzf /dev/stdin -C "${ROOT_DIR}"
+if [ -f "${TAR_FILE}" ]; then
+  tar xzf "${TAR_FILE}" -C "${ROOT_DIR}"
+  exit 0
+fi
+
+python download.py -h wwwuser.gwdg.de --uri /~compbiol/data/hhsuite/databases/hhsuite_dbs/old-releases/pdb70_from_mmcif_200401.tar.gz --ssl > "${TAR_FILE}"
+tar xzf "${TAR_FILE}" -C "${ROOT_DIR}"

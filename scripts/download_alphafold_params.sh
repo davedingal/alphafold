@@ -25,6 +25,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 DOWNLOAD_DIR="$1"
+TAR_FILE="$2/params.tar.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/params"
 SOURCE_URL="https://storage.googleapis.com/alphafold/alphafold_params_2021-07-14.tar"
 BASENAME=$(basename "${SOURCE_URL}")
@@ -35,4 +36,10 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-python download.py -h storage.googleapis.com --ssl --uri /alphafold/alphafold_params_2021-07-14.tar | tar xf - -C "${ROOT_DIR}" --no-seek
+if [ -f "${TAR_FILE}" ]; then
+  tar xzf "${TAR_FILE}" -C "${ROOT_DIR}"
+  exit 0
+fi
+
+python download.py -h storage.googleapis.com --ssl --uri /alphafold/alphafold_params_2021-07-14.tar | gzip > "${TAR_FILE}"
+tar xzf "${TAR_FILE}" -C "${ROOT_DIR}" --no-seek

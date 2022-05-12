@@ -25,6 +25,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 DOWNLOAD_DIR="$1"
+TAR_FILE="$2/bfd.tar.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/bfd"
 # Mirror of:
 # https://bfd.mmseqs.com/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt.tar.gz.
@@ -37,4 +38,10 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt.tar.gz --ssl | tar xzf /dev/stdin -C "${ROOT_DIR}"
+if [ -f "${TAR_FILE}" ]; then
+  tar xzf "${TAR_FILE}" -C "${ROOT_DIR}"
+  exit 0
+fi
+
+python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt.tar.gz --ssl > ${TAR_FILE}
+tar xzf ${TAR_FILE} -C "${ROOT_DIR}"

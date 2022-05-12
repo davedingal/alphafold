@@ -25,6 +25,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 DOWNLOAD_DIR="$1"
+TAR_FILE="$2/mgnify.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/mgnify"
 # Mirror of:
 # ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/peptide_database/2018_12/mgy_clusters.fa.gz
@@ -37,4 +38,10 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/mgy_clusters_2018_12.fa.gz --ssl | gunzip > "${ROOT_DIR}/mgy_clusters_2018_12.fa"
+if [ -f "${TAR_FILE}" ]; then
+  cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/mgy_clusters_2018_12.fa"
+  exit 0
+fi
+
+python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/mgy_clusters_2018_12.fa.gz --ssl > "${TAR_FILE}"
+cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/mgy_clusters_2018_12.fa"

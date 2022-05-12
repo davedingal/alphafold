@@ -25,6 +25,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 DOWNLOAD_DIR="$1"
+TAR_FILE="$2/uniclust30.tar.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/uniclust30"
 # Mirror of:
 # http://wwwuser.gwdg.de/~compbiol/uniclust/2018_08/uniclust30_2018_08_hhsuite.tar.gz
@@ -37,4 +38,10 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/uniclust30_2018_08_hhsuite.tar.gz --ssl | tar xzf /dev/stdin -C "${ROOT_DIR}"
+if [ -f "${TAR_FILE}" ]; then
+  tar xzf "${TAR_FILE}" -C "${ROOT_DIR}"
+  exit 0
+fi
+
+python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/uniclust30_2018_08_hhsuite.tar.gz --ssl > "${TAR_FILE}"
+tar xzf "${TAR_FILE}" -C "${ROOT_DIR}"

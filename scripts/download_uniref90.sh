@@ -25,6 +25,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 DOWNLOAD_DIR="$1"
+TAR_FILE="$2/uniref90.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/uniref90"
 SOURCE_URL="ftp://ftp.uniprot.org/pub/databases/uniprot/uniref/uniref90/uniref90.fasta.gz"
 BASENAME=$(basename "${SOURCE_URL}")
@@ -35,4 +36,10 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-curl -XGET "${SOURCE_URL}" | gunzip > "${ROOT_DIR}/uniref90.fasta"
+if [ -f "${TAR_FILE}" ]; then
+  cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/uniref90.fasta"
+  exit 0
+fi
+
+curl -XGET "${SOURCE_URL}" > "${TAR_FILE}"
+cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/uniref90.fasta"

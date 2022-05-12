@@ -25,6 +25,7 @@ if [[ $# -eq 0 ]]; then
 fi
 
 DOWNLOAD_DIR="$1"
+TAR_FILE="$2/small_bfd.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/small_bfd"
 SOURCE_URL="https://storage.googleapis.com/alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz"
 BASENAME=$(basename "${SOURCE_URL}")
@@ -35,4 +36,10 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-python download.py --ssl -h storage.googleapis.com --uri /alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz | gunzip > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"
+if [ -f "${TAR_FILE}" ]; then
+  cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"
+  exit 0
+fi
+
+python download.py --ssl -h storage.googleapis.com --uri /alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz > "${TAR_FILE}"
+cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"
