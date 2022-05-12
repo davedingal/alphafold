@@ -17,8 +17,6 @@ echo "Initializing anaconda environment"
 
 echo "Python binary: $(which python)"
 
-env > env2.txt
-
 DATA_DIR=$1
 
 if ! [ -d "${DATA_DIR}" ]; then

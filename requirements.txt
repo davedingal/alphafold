@@ -4,7 +4,7 @@ chex==0.0.7
 dm-haiku==0.0.4
 dm-tree==0.1.6
 immutabledict==2.0.0
-jax>=0.2.14
+jax==0.2.22
 ml-collections==0.1.0
 numpy==1.19.5
 scipy==1.7.0

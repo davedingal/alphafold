@@ -99,7 +99,12 @@ conda install -y -c conda-forge openmm=7.5.1 cudatoolkit=11.4 pdbfixer
 
 pip3 install --upgrade pip
 pip3 install -r requirements.txt
-#pip3 install --upgrade jax jaxlib==0.1.69+cuda110 -f https://storage.googleapis.com/jax-releases/jax_releases.html
+
+# we're installing jax 0.2.22 which was released when jaxlib 0.1.73 was available which seems to be the first version compiled with support for cuda v11.4
+pip3 install --upgrade jaxlib==0.1.73+cuda11.cudnn82 -f https://storage.googleapis.com/jax-releases/jax_releases.html
+
+# TACC GPU nodes use cuda v11.4 and nvcc is not installed so we have to bring our own...
+conda install -c nvidia cuda-nvcc=11.4
 
 #pushd $HOME/.local/lib/python3.9/site-packages/
 #patch -p0 < ${WORK}
