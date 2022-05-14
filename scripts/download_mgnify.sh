@@ -24,20 +24,24 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-if ! command -v aria2c &> /dev/null ; then
-    echo "Error: aria2c could not be found. Please install aria2c (sudo apt install aria2)."
-    exit 1
-fi
-
 DOWNLOAD_DIR="$1"
+TAR_FILE="$2/mgnify.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/mgnify"
 # Mirror of:
 # ftp://ftp.ebi.ac.uk/pub/databases/metagenomics/peptide_database/2018_12/mgy_clusters.fa.gz
 SOURCE_URL="https://storage.googleapis.com/alphafold-databases/casp14_versions/mgy_clusters_2018_12.fa.gz"
 BASENAME=$(basename "${SOURCE_URL}")
 
-mkdir --parents "${ROOT_DIR}"
-aria2c "${SOURCE_URL}" --dir="${ROOT_DIR}"
-pushd "${ROOT_DIR}"
-gunzip "${ROOT_DIR}/${BASENAME}"
-popd
+if [ -d "${ROOT_DIR}" ]; then
+  echo "Skipping."
+  exit 0
+fi
+
+mkdir -p "${ROOT_DIR}"
+if [ -f "${TAR_FILE}" ]; then
+  cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/mgy_clusters_2018_12.fa"
+  exit 0
+fi
+
+python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/mgy_clusters_2018_12.fa.gz --ssl > "${TAR_FILE}"
+cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/mgy_clusters_2018_12.fa"

@@ -24,11 +24,6 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-if ! command -v aria2c &> /dev/null ; then
-    echo "Error: aria2c could not be found. Please install aria2c (sudo apt install aria2)."
-    exit 1
-fi
-
 if ! command -v rsync &> /dev/null ; then
     echo "Error: rsync could not be found. Please install rsync."
     exit 1
@@ -36,30 +31,48 @@ fi
 
 DOWNLOAD_DIR="$1"
 ROOT_DIR="${DOWNLOAD_DIR}/pdb_mmcif"
-RAW_DIR="${ROOT_DIR}/raw"
 MMCIF_DIR="${ROOT_DIR}/mmcif_files"
+RAW_DIR="${ROOT_DIR}/mmcif/raw"
 
-echo "Running rsync to fetch all mmCIF files (note that the rsync progress estimate might be inaccurate)..."
-echo "If the download speed is too slow, try changing the mirror to:"
-echo "  * rsync.ebi.ac.uk::pub/databases/pdb/data/structures/divided/mmCIF/ (Europe)"
-echo "  * ftp.pdbj.org::ftp_data/structures/divided/mmCIF/ (Asia)"
-echo "or see https://www.wwpdb.org/ftp/pdb-ftp-sites for more download options."
-mkdir --parents "${RAW_DIR}"
-rsync --recursive --links --perms --times --compress --info=progress2 --delete --port=33444 \
-  rsync.rcsb.org::ftp_data/structures/divided/mmCIF/ \
-  "${RAW_DIR}"
+TAR_FILE="$2/mmcif.tar.gz"
 
-echo "Unzipping all mmCIF files..."
-find "${RAW_DIR}/" -type f -iname "*.gz" -exec gunzip {} +
+mkdir -p "${ROOT_DIR}"
+if ! [ -f "${ROOT_DIR}/obsolete.dat" ]; then
+  curl -XGET "ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat" > "${ROOT_DIR}/obsolete.dat"
+fi
 
-echo "Flattening all mmCIF files..."
-mkdir --parents "${MMCIF_DIR}"
-find "${RAW_DIR}" -type d -empty -delete  # Delete empty directories.
-for subdir in "${RAW_DIR}"/*; do
-  mv "${subdir}/"*.cif "${MMCIF_DIR}"
-done
+if ! [ -f "${MMCIF_DIR}/download_completed" ]; then
+  mkdir -p "${MMCIF_DIR}"
+  if [ -f "${TAR_FILE}" ]; then
+    tar xzf "${TAR_FILE}" -C "${MMCIF_DIR}"
+    exit 0
+  fi
 
-# Delete empty download directory structure.
-find "${RAW_DIR}" -type d -empty -delete
+  echo "Running rsync to fetch all mmCIF files (note that the rsync progress estimate might be inaccurate)..."
+  echo "If the download speed is too slow, try changing the mirror to:"
+  echo "  * rsync.ebi.ac.uk::pub/databases/pdb/data/structures/divided/mmCIF/ (Europe)"
+  echo "  * ftp.pdbj.org::ftp_data/structures/divided/mmCIF/ (Asia)"
+  echo "or see https://www.wwpdb.org/ftp/pdb-ftp-sites for more download options."
+  mkdir -p "${RAW_DIR}"
+  rsync --recursive --links --perms --times --compress --info=progress2 --delete --port=33444 \
+    rsync.rcsb.org::ftp_data/structures/divided/mmCIF/ \
+    "${RAW_DIR}"
 
-aria2c "ftp://ftp.wwpdb.org/pub/pdb/data/status/obsolete.dat" --dir="${ROOT_DIR}"
+  echo "Unzipping all mmCIF files..."
+  find "${RAW_DIR}/" -type f -iname "*.gz" -exec gunzip {} +
+
+  echo "Flattening all mmCIF files..."
+  find "${RAW_DIR}" -type d -empty -delete  # Delete empty directories.
+  for subdir in "${RAW_DIR}"/*; do
+    mv "${subdir}/"*.cif "${MMCIF_DIR}"
+  done
+
+  rm -rf "${RAW_DIR}"
+
+  touch "${MMCIF_DIR}/download_completed"
+
+  tar czf "${TAR_FILE}" -C "${MMCIF_DIR}" .
+else
+  echo "Skipping mmcif rsync."
+fi
+

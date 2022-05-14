@@ -168,16 +168,21 @@ def predict_structure(
     os.makedirs(msa_output_dir)
 
   # Get features.
-  t_0 = time.time()
-  feature_dict = data_pipeline.process(
-      input_fasta_path=fasta_path,
-      msa_output_dir=msa_output_dir)
-  timings['features'] = time.time() - t_0
-
-  # Write out features as a pickled dictionary.
   features_output_path = os.path.join(output_dir, 'features.pkl')
-  with open(features_output_path, 'wb') as f:
-    pickle.dump(feature_dict, f, protocol=4)
+  feature_dict = None
+  try:
+    with open(features_output_path, 'rb') as f:
+      feature_dict = pickle.load(f)
+  except:
+    t_0 = time.time()
+    feature_dict = data_pipeline.process(
+        input_fasta_path=fasta_path,
+        msa_output_dir=msa_output_dir)
+    timings['features'] = time.time() - t_0
+
+    # Write out features as a pickled dictionary.
+    with open(features_output_path, 'wb') as f:
+      pickle.dump(feature_dict, f, protocol=4)
 
   unrelaxed_pdbs = {}
   relaxed_pdbs = {}
@@ -185,46 +190,59 @@ def predict_structure(
 
   # Run the models.
   num_models = len(model_runners)
-  for model_index, (model_name, model_runner) in enumerate(
-      model_runners.items()):
-    logging.info('Running model %s on %s', model_name, fasta_name)
+  for model_index, (model_name, model_runner) in enumerate(model_runners.items()):
+    relaxed_output_path = os.path.join(output_dir, f'relaxed_{model_name}.pdb')
+    try:
+      with open(relaxed_output_path, 'r') as f:
+        f.close()
+        logging.info('%s already processed.  Skipping.', model_name)
+        continue
+    except:
+      logging.info('Running model %s on %s', model_name, fasta_name)
+      # nothing to do
+
     t_0 = time.time()
     model_random_seed = model_index + random_seed * num_models
     processed_feature_dict = model_runner.process_features(
         feature_dict, random_seed=model_random_seed)
     timings[f'process_features_{model_name}'] = time.time() - t_0
 
-    t_0 = time.time()
-    prediction_result = model_runner.predict(processed_feature_dict,
-                                             random_seed=model_random_seed)
-    t_diff = time.time() - t_0
-    timings[f'predict_and_compile_{model_name}'] = t_diff
-    logging.info(
-        'Total JAX model %s on %s predict time (includes compilation time, see --benchmark): %.1fs',
-        model_name, fasta_name, t_diff)
-
-    if benchmark:
+    # prediction_result
+    result_output_path = os.path.join(output_dir, f'result_{model_name}.pkl')
+    prediction_result = None
+    try:
+      with open(result_output_path, 'rb') as f:
+        logging.info('Using existing prediction result.')
+        prediction_result = pickle.load(f)
+    except:
       t_0 = time.time()
-      model_runner.predict(processed_feature_dict,
-                           random_seed=model_random_seed)
+      prediction_result = model_runner.predict(processed_feature_dict, random_seed=model_random_seed)
       t_diff = time.time() - t_0
-      timings[f'predict_benchmark_{model_name}'] = t_diff
+      timings[f'predict_and_compile_{model_name}'] = t_diff
       logging.info(
-          'Total JAX model %s on %s predict time (excludes compilation time): %.1fs',
+          'Total JAX model %s on %s predict time (includes compilation time, see --benchmark): %.1fs',
           model_name, fasta_name, t_diff)
+
+      # Save the model outputs.
+      with open(result_output_path, 'wb') as f:
+        pickle.dump(prediction_result, f, protocol=4)
+
+      if benchmark:
+        t_0 = time.time()
+        model_runner.predict(processed_feature_dict, random_seed=model_random_seed)
+        t_diff = time.time() - t_0
+        timings[f'predict_benchmark_{model_name}'] = t_diff
+        logging.info(
+            'Total JAX model %s on %s predict time (excludes compilation time): %.1fs',
+            model_name, fasta_name, t_diff)
 
     plddt = prediction_result['plddt']
     ranking_confidences[model_name] = prediction_result['ranking_confidence']
 
-    # Save the model outputs.
-    result_output_path = os.path.join(output_dir, f'result_{model_name}.pkl')
-    with open(result_output_path, 'wb') as f:
-      pickle.dump(prediction_result, f, protocol=4)
 
     # Add the predicted LDDT in the b-factor column.
     # Note that higher predicted LDDT value means higher model confidence.
-    plddt_b_factors = np.repeat(
-        plddt[:, None], residue_constants.atom_type_num, axis=-1)
+    plddt_b_factors = np.repeat(plddt[:, None], residue_constants.atom_type_num, axis=-1)
     unrelaxed_protein = protein.from_prediction(
         features=processed_feature_dict,
         result=prediction_result,
@@ -245,16 +263,26 @@ def predict_structure(
       relaxed_pdbs[model_name] = relaxed_pdb_str
 
       # Save the relaxed PDB.
-      relaxed_output_path = os.path.join(
-          output_dir, f'relaxed_{model_name}.pdb')
+      relaxed_output_path = os.path.join(output_dir, f'relaxed_{model_name}.pdb')
       with open(relaxed_output_path, 'w') as f:
         f.write(relaxed_pdb_str)
 
+  # ensure that all plddts have been loaded before ranking the outputs
+  for model_name, model_runner in model_runners.items():
+    if model_name in plddts:
+      continue
+
+    logging.info('Loading plddt data for %s', model_name)
+    result_output_path = os.path.join(output_dir, f'result_{model_name}.pkl')
+    with open(result_output_path, 'rb') as f:
+      prediction_result = pickle.load(f)
+      plddts[model_name] = np.mean(prediction_result['plddt'])
+
   # Rank by model confidence and write out relaxed PDBs in rank order.
   ranked_order = []
-  for idx, (model_name, _) in enumerate(
-      sorted(ranking_confidences.items(), key=lambda x: x[1], reverse=True)):
+  for idx, (model_name, _) in enumerate(sorted(ranking_confidences.items(), key=lambda x: x[1], reverse=True)):
     ranked_order.append(model_name)
+
     ranked_output_path = os.path.join(output_dir, f'ranked_{idx}.pdb')
     with open(ranked_output_path, 'w') as f:
       if amber_relaxer:
@@ -279,19 +307,14 @@ def main(argv):
   if len(argv) > 1:
     raise app.UsageError('Too many command-line arguments.')
 
-  for tool_name in (
-      'jackhmmer', 'hhblits', 'hhsearch', 'hmmsearch', 'hmmbuild', 'kalign'):
+  for tool_name in ('jackhmmer', 'hhblits', 'hhsearch', 'hmmsearch', 'hmmbuild', 'kalign'):
     if not FLAGS[f'{tool_name}_binary_path'].value:
-      raise ValueError(f'Could not find path to the "{tool_name}" binary. Make '
-                       'sure it is installed on your system.')
+      raise ValueError(f'Could not find path to the "{tool_name}" binary. Make sure it is installed on your system.')
 
   use_small_bfd = FLAGS.db_preset == 'reduced_dbs'
-  _check_flag('small_bfd_database_path', 'db_preset',
-              should_be_set=use_small_bfd)
-  _check_flag('bfd_database_path', 'db_preset',
-              should_be_set=not use_small_bfd)
-  _check_flag('uniclust30_database_path', 'db_preset',
-              should_be_set=not use_small_bfd)
+  _check_flag('small_bfd_database_path', 'db_preset', should_be_set=use_small_bfd)
+  _check_flag('bfd_database_path', 'db_preset', should_be_set=not use_small_bfd)
+  _check_flag('uniclust30_database_path', 'db_preset', should_be_set=not use_small_bfd)
 
   run_multimer_system = 'multimer' in FLAGS.model_preset
   _check_flag('pdb70_database_path', 'model_preset',
@@ -373,8 +396,7 @@ def main(argv):
     for i in range(num_predictions_per_model):
       model_runners[f'{model_name}_pred_{i}'] = model_runner
 
-  logging.info('Have %d models: %s', len(model_runners),
-               list(model_runners.keys()))
+  logging.info('Have %d models: %s', len(model_runners), list(model_runners.keys()))
 
   if FLAGS.run_relax:
     amber_relaxer = relax.AmberRelaxation(

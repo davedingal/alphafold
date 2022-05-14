@@ -24,18 +24,22 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-if ! command -v aria2c &> /dev/null ; then
-    echo "Error: aria2c could not be found. Please install aria2c (sudo apt install aria2)."
-    exit 1
-fi
-
 DOWNLOAD_DIR="$1"
+TAR_FILE="$2/small_bfd.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/small_bfd"
 SOURCE_URL="https://storage.googleapis.com/alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz"
 BASENAME=$(basename "${SOURCE_URL}")
 
-mkdir --parents "${ROOT_DIR}"
-aria2c "${SOURCE_URL}" --dir="${ROOT_DIR}"
-pushd "${ROOT_DIR}"
-gunzip "${ROOT_DIR}/${BASENAME}"
-popd
+if [ -d "${ROOT_DIR}" ]; then
+  echo "Skipping."
+  exit 0
+fi
+
+mkdir -p "${ROOT_DIR}"
+if [ -f "${TAR_FILE}" ]; then
+  cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"
+  exit 0
+fi
+
+python download.py --ssl -h storage.googleapis.com --uri /alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz > "${TAR_FILE}"
+cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"
