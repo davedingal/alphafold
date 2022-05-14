@@ -67,6 +67,6 @@ while finished == False:
     received_length += len(data)
     if (received_length > next_threshold):
       end = time.time()
-      sys.stderr.write('Received %.3f MB in totoal.  %.3f MB/s\n' % (received_length / one_megabyte, threshold_mb / (end - start)))
+      sys.stderr.write('Received %.3f MB in total.  %.3f MB/s\n' % (received_length / one_megabyte, threshold_mb / (end - start)))
       start = time.time()
       next_threshold += one_megabyte * threshold_mb
