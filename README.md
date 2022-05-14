@@ -1,6 +1,19 @@
 ![header](imgs/header.jpg)
 
-# AlphaFold
+# AlphaFold (modified)
+
+## Professor P. C. Dave P. Dingal's Changes
+
+I modified alphafold for my own purposes which only affect the amount of time required for alphafold to provide me with results.  I've been running a modified version of v2.0.0 for a while and have gotten it down to around 40 minutes in some cases for 5 models.  This adaptation works well on clusters where scratch files (database files) are removed if they are unused for, say, 10 days.  Here a list of some things I have changed:
+
+1. Removed `aria2c` and replaced it with a python download script which automatically reconnects to the server if the connection breaks and resumes downloading from where it left off
+2. Databases are skipped if they already exist (can re-run `download_all_data.sh` without unnecessarily downloading data that is already downloaded)
+3. The original `tar.gz` files can be saved in a persistent directory to avoid future long download times (e.g. mmcif)
+3. `pigz` is used when downloading databases (if it exists).  It is a multi-threading implementation of gzip/gunzip and can restore deleted decompressed database files extremely quickly on a system with multiple cores.
+4. `alphafold/data/pipeline.py` utilizes multithreading which significantly cuts down on the time required to perform MSAs
+5. Numerous "save points" have been added which causes entire blocks of code to be skipped if they were already run.  This was done to prevent having to re-run long processes in `pipeline.py` and during the prediction step if a job on a compute cluster gets cancelled for whatever reason.
+
+--end of changes--
 
 This package provides an implementation of the inference pipeline of AlphaFold
 v2.0. This is a completely new model that was entered in CASP14 and published in
