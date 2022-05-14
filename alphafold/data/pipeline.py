@@ -190,7 +190,7 @@ class DataPipeline:
       use_precomputed_msas=self.use_precomputed_msas,
       max_sto_sequences=self.mgnify_max_hits)
 
-    self.jackhmmer_mgnify_result_sto = jackhmmer_mgnify_result['sto']
+    self.mgnify_msa = parsers.parse_stockholm(jackhmmer_mgnify_result['sto'])
 
   def run_bfd_query(self, input_fasta_path: str, msa_output_dir: str):
     if self._use_small_bfd:
@@ -237,7 +237,6 @@ class DataPipeline:
     mgnify_thread.join()
     bfd_thread.join()
 
-    mgnify_msa = parsers.parse_stockholm(self.jackhmmer_mgnify_result_sto)
     templates_result = self.template_featurizer.get_templates(
         query_sequence=input_sequence,
         hits=pdb_template_hits)
@@ -247,11 +246,11 @@ class DataPipeline:
         description=input_description,
         num_res=num_res)
 
-    msa_features = make_msa_features((self.uniref90_msa, self.bfd_msa, mgnify_msa))
+    msa_features = make_msa_features((self.uniref90_msa, self.bfd_msa, self.mgnify_msa))
 
     logging.info('Uniref90 MSA size: %d sequences.', len(self.uniref90_msa))
     logging.info('BFD MSA size: %d sequences.', len(self.bfd_msa))
-    logging.info('MGnify MSA size: %d sequences.', len(mgnify_msa))
+    logging.info('MGnify MSA size: %d sequences.', len(self.mgnify_msa))
     logging.info('Final (deduplicated) MSA size: %d sequences.',
                  msa_features['num_alignments'][0])
     logging.info('Total number of templates (NB: this can include bad '
