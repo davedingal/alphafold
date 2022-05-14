@@ -36,10 +36,8 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-if [ -f "${TAR_FILE}" ]; then
-  cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"
-  exit 0
+if ! [ -f "${TAR_FILE}" ]; then
+  python download.py --ssl -h storage.googleapis.com --uri /alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz > "${TAR_FILE}"
 fi
 
-python download.py --ssl -h storage.googleapis.com --uri /alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz > "${TAR_FILE}"
 cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"

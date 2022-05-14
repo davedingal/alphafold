@@ -36,10 +36,8 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-if [ -f "${TAR_FILE}" ]; then
-  tar xzf "${TAR_FILE}" -C "${ROOT_DIR}"
-  exit 0
+if ! [ -f "${TAR_FILE}" ]; then
+  python download.py -h storage.googleapis.com --ssl --uri /alphafold/alphafold_params_2021-07-14.tar | gzip > "${TAR_FILE}"
 fi
 
-python download.py -h storage.googleapis.com --ssl --uri /alphafold/alphafold_params_2021-07-14.tar | gzip > "${TAR_FILE}"
 tar xzf "${TAR_FILE}" -C "${ROOT_DIR}" --no-seek

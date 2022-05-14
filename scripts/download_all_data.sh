@@ -62,9 +62,9 @@ echo "Downloading Uniref90..."
 bash "${SCRIPT_DIR}/download_uniref90.sh" "${DOWNLOAD_DIR}" "${TAR_DIR}"
 
 echo "Downloading UniProt..."
-bash "${SCRIPT_DIR}/download_uniprot.sh" "${DOWNLOAD_DIR}"
+bash "${SCRIPT_DIR}/download_uniprot.sh" "${DOWNLOAD_DIR}" "${TAR_DIR}"
 
 echo "Downloading PDB SeqRes..."
-bash "${SCRIPT_DIR}/download_pdb_seqres.sh" "${DOWNLOAD_DIR}"
+bash "${SCRIPT_DIR}/download_pdb_seqres.sh" "${DOWNLOAD_DIR}" "${TAR_DIR}"
 
 echo "All data downloaded."

@@ -35,10 +35,8 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-if [ -f "${TAR_FILE}" ]; then
-  tar xzf "${TAR_FILE}" -C "${ROOT_DIR}"
-  exit 0
+if ! [ -f "${TAR_FILE}" ]; then
+  python download.py -h wwwuser.gwdg.de --uri /~compbiol/data/hhsuite/databases/hhsuite_dbs/old-releases/pdb70_from_mmcif_200401.tar.gz --ssl > "${TAR_FILE}"
 fi
 
-python download.py -h wwwuser.gwdg.de --uri /~compbiol/data/hhsuite/databases/hhsuite_dbs/old-releases/pdb70_from_mmcif_200401.tar.gz --ssl > "${TAR_FILE}"
 tar xzf "${TAR_FILE}" -C "${ROOT_DIR}"

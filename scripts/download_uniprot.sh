@@ -31,25 +31,32 @@ if ! command -v aria2c &> /dev/null ; then
 fi
 
 DOWNLOAD_DIR="$1"
+TAR_DIR="$2"
 ROOT_DIR="${DOWNLOAD_DIR}/uniprot"
 
 TREMBL_SOURCE_URL="ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_trembl.fasta.gz"
+TREMBL_GZIP="${TAR_DIR}/$(basename "${TREMBL_SOURCE_URL}")"
 TREMBL_BASENAME=$(basename "${TREMBL_SOURCE_URL}")
 TREMBL_UNZIPPED_BASENAME="${TREMBL_BASENAME%.gz}"
 
 SPROT_SOURCE_URL="ftp://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz"
+SPROT_GZIP="${TAR_DIR}/$(basename "${SPROT_SOURCE_URL}")"
 SPROT_BASENAME=$(basename "${SPROT_SOURCE_URL}")
 SPROT_UNZIPPED_BASENAME="${SPROT_BASENAME%.gz}"
 
-mkdir --parents "${ROOT_DIR}"
-aria2c "${TREMBL_SOURCE_URL}" --dir="${ROOT_DIR}"
-aria2c "${SPROT_SOURCE_URL}" --dir="${ROOT_DIR}"
-pushd "${ROOT_DIR}"
-gunzip "${ROOT_DIR}/${TREMBL_BASENAME}"
-gunzip "${ROOT_DIR}/${SPROT_BASENAME}"
+if [ -d "${ROOT_DIR}" ]; then
+    echo "Skipping"
+    exit 0
+fi
 
-# Concatenate TrEMBL and SwissProt, rename to uniprot and clean up.
-cat "${ROOT_DIR}/${SPROT_UNZIPPED_BASENAME}" >> "${ROOT_DIR}/${TREMBL_UNZIPPED_BASENAME}"
-mv "${ROOT_DIR}/${TREMBL_UNZIPPED_BASENAME}" "${ROOT_DIR}/uniprot.fasta"
-rm "${ROOT_DIR}/${SPROT_UNZIPPED_BASENAME}"
-popd
+mkdir -p "${ROOT_DIR}"
+if ! [ -f "${TREMBL_GZIP}" ]; then
+    curl -XGET "${TREMBL_SOURCE_URL}" > "${TREMBL_GZIP}"
+fi
+
+if ! [ -f "${SPROT_GZIP}" ]; then
+    curl -XGET "${SPROT_SOURCE_URL}" > "${SPROT_GZIP}"
+fi
+
+cat "${TREMBL_GZIP}" | gunzip > "${ROOT_DIR}/uniprot.fasta"
+cat "${SPROT_GZIP}" | gunzip >> "${ROOT_DIR}/uniprot.fasta"

@@ -36,10 +36,8 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-if [ -f "${TAR_FILE}" ]; then
-  cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/uniref90.fasta"
-  exit 0
+if ! [ -f "${TAR_FILE}" ]; then
+  curl -XGET "${SOURCE_URL}" > "${TAR_FILE}"
 fi
 
-curl -XGET "${SOURCE_URL}" > "${TAR_FILE}"
 cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/uniref90.fasta"

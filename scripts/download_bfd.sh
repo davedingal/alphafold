@@ -38,10 +38,8 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-if [ -f "${TAR_FILE}" ]; then
-  tar xzf "${TAR_FILE}" -C "${ROOT_DIR}"
-  exit 0
+if ! [ -f "${TAR_FILE}" ]; then
+  python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt.tar.gz --ssl > ${TAR_FILE}
 fi
 
-python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt.tar.gz --ssl > ${TAR_FILE}
 tar xzf ${TAR_FILE} -C "${ROOT_DIR}"

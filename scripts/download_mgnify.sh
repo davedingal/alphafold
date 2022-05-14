@@ -38,10 +38,8 @@ if [ -d "${ROOT_DIR}" ]; then
 fi
 
 mkdir -p "${ROOT_DIR}"
-if [ -f "${TAR_FILE}" ]; then
-  cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/mgy_clusters_2018_12.fa"
-  exit 0
+if ! [ -f "${TAR_FILE}" ]; then
+  python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/mgy_clusters_2018_12.fa.gz --ssl > "${TAR_FILE}"
 fi
 
-python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/mgy_clusters_2018_12.fa.gz --ssl > "${TAR_FILE}"
 cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/mgy_clusters_2018_12.fa"

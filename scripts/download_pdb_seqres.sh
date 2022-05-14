@@ -24,15 +24,15 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-if ! command -v aria2c &> /dev/null ; then
-    echo "Error: aria2c could not be found. Please install aria2c (sudo apt install aria2)."
-    exit 1
-fi
-
 DOWNLOAD_DIR="$1"
 ROOT_DIR="${DOWNLOAD_DIR}/pdb_seqres"
 SOURCE_URL="ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt"
 BASENAME=$(basename "${SOURCE_URL}")
 
-mkdir --parents "${ROOT_DIR}"
-aria2c "${SOURCE_URL}" --dir="${ROOT_DIR}"
+if [ -f "${ROOT_DIR}/pdb_seqres.txt" ]; then
+    echo "Skipping pdb_seqres"
+    exit 0
+fi
+
+mkdir -p "${ROOT_DIR}"
+curl -XGET "${SOURCE_URL}" > "${ROOT_DIR}/pdb_seqres.txt"
