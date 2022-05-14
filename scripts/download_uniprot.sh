@@ -54,7 +54,6 @@ if [ -d "${ROOT_DIR}" ]; then
     exit 0
 fi
 
-mkdir -p "${ROOT_DIR}"
 if ! [ -f "${TREMBL_GZIP}" ]; then
     curl -XGET "${TREMBL_SOURCE_URL}" > "${TREMBL_GZIP}"
 fi
@@ -63,5 +62,6 @@ if ! [ -f "${SPROT_GZIP}" ]; then
     curl -XGET "${SPROT_SOURCE_URL}" > "${SPROT_GZIP}"
 fi
 
+mkdir -p "${ROOT_DIR}"
 cat "${TREMBL_GZIP}" | ${GUNZIP} > "${ROOT_DIR}/uniprot.fasta"
 cat "${SPROT_GZIP}" | ${GUNZIP} >> "${ROOT_DIR}/uniprot.fasta"
