@@ -24,6 +24,16 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
+# check if pigz is installed and use it if possible - significantly faster zipping and unzipping
+GZIP=gzip
+GUNZIP=gunzip
+if command -v pigz &> /dev/null ; then
+  GZIP=pigz
+  GUNZIP="pigz -d"
+else
+  echo "Install pigz for faster unzipping/zipping"
+fi
+
 DOWNLOAD_DIR="$1"
 TAR_FILE="$2/pdb70.tar.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/pdb70"
@@ -39,4 +49,4 @@ if ! [ -f "${TAR_FILE}" ]; then
   python download.py -h wwwuser.gwdg.de --uri /~compbiol/data/hhsuite/databases/hhsuite_dbs/old-releases/pdb70_from_mmcif_200401.tar.gz --ssl > "${TAR_FILE}"
 fi
 
-tar xzf "${TAR_FILE}" -C "${ROOT_DIR}"
+${GUNZIP} -k "${TAR_FILE}" | tar xf - -C "${ROOT_DIR}"

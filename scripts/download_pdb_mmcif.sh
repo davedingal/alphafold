@@ -29,6 +29,16 @@ if ! command -v rsync &> /dev/null ; then
     exit 1
 fi
 
+# check if pigz is installed and use it if possible - significantly faster zipping and unzipping
+GZIP=gzip
+GUNZIP=gunzip
+if command -v pigz &> /dev/null ; then
+  GZIP=pigz
+  GUNZIP="pigz -d"
+else
+  echo "Install pigz for faster unzipping/zipping"
+fi
+
 DOWNLOAD_DIR="$1"
 ROOT_DIR="${DOWNLOAD_DIR}/pdb_mmcif"
 MMCIF_DIR="${ROOT_DIR}/mmcif_files"
@@ -44,7 +54,7 @@ fi
 if ! [ -f "${MMCIF_DIR}/download_completed" ]; then
   mkdir -p "${MMCIF_DIR}"
   if [ -f "${TAR_FILE}" ]; then
-    tar xzf "${TAR_FILE}" -C "${MMCIF_DIR}"
+    ${GUNZIP} -k "${TAR_FILE}" | tar xf - -C "${MMCIF_DIR}"
     exit 0
   fi
 
@@ -71,7 +81,7 @@ if ! [ -f "${MMCIF_DIR}/download_completed" ]; then
 
   touch "${MMCIF_DIR}/download_completed"
 
-  tar czf "${TAR_FILE}" -C "${MMCIF_DIR}" .
+  tar cf - -C "${MMCIF_DIR}" . | ${GZIP} > "${TAR_FILE}"
 else
   echo "Skipping mmcif rsync."
 fi

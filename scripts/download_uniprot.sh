@@ -30,6 +30,16 @@ if ! command -v aria2c &> /dev/null ; then
     exit 1
 fi
 
+# check if pigz is installed and use it if possible - significantly faster zipping and unzipping
+GZIP=gzip
+GUNZIP=gunzip
+if command -v pigz &> /dev/null ; then
+  GZIP=pigz
+  GUNZIP="pigz -d"
+else
+  echo "Install pigz for faster unzipping/zipping"
+fi
+
 DOWNLOAD_DIR="$1"
 TAR_DIR="$2"
 ROOT_DIR="${DOWNLOAD_DIR}/uniprot"
@@ -58,5 +68,5 @@ if ! [ -f "${SPROT_GZIP}" ]; then
     curl -XGET "${SPROT_SOURCE_URL}" > "${SPROT_GZIP}"
 fi
 
-cat "${TREMBL_GZIP}" | gunzip > "${ROOT_DIR}/uniprot.fasta"
-cat "${SPROT_GZIP}" | gunzip >> "${ROOT_DIR}/uniprot.fasta"
+cat "${TREMBL_GZIP}" | ${GUNZIP} > "${ROOT_DIR}/uniprot.fasta"
+cat "${SPROT_GZIP}" | ${GUNZIP} >> "${ROOT_DIR}/uniprot.fasta"

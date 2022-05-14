@@ -24,6 +24,16 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
+# check if pigz is installed and use it if possible - significantly faster zipping and unzipping
+GZIP=gzip
+GUNZIP=gunzip
+if command -v pigz &> /dev/null ; then
+  GZIP=pigz
+  GUNZIP="pigz -d"
+else
+  echo "Install pigz for faster unzipping/zipping"
+fi
+
 DOWNLOAD_DIR="$1"
 TAR_FILE="$2/mgnify.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/mgnify"
@@ -42,4 +52,4 @@ if ! [ -f "${TAR_FILE}" ]; then
   python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/mgy_clusters_2018_12.fa.gz --ssl > "${TAR_FILE}"
 fi
 
-cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/mgy_clusters_2018_12.fa"
+${GUNZIP} -k "${TAR_FILE}" > "${ROOT_DIR}/mgy_clusters_2018_12.fa"

@@ -24,11 +24,20 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
+# check if pigz is installed and use it if possible - significantly faster zipping and unzipping
+GZIP=gzip
+GUNZIP=gunzip
+if command -v pigz &> /dev/null ; then
+  GZIP=pigz
+  GUNZIP="pigz -d"
+else
+  echo "Install pigz for faster unzipping/zipping"
+fi
+
 DOWNLOAD_DIR="$1"
 TAR_FILE="$2/small_bfd.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/small_bfd"
 SOURCE_URL="https://storage.googleapis.com/alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz"
-BASENAME=$(basename "${SOURCE_URL}")
 
 if [ -d "${ROOT_DIR}" ]; then
   echo "Skipping."
@@ -40,4 +49,4 @@ if ! [ -f "${TAR_FILE}" ]; then
   python download.py --ssl -h storage.googleapis.com --uri /alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz > "${TAR_FILE}"
 fi
 
-cat "${TAR_FILE}" | gunzip > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"
+${GUNZIP} -k "${TAR_FILE}" > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"

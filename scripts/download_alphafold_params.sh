@@ -24,11 +24,20 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
+# check if pigz is installed and use it if possible - significantly faster zipping and unzipping
+GZIP=gzip
+GUNZIP=gunzip
+if command -v pigz &> /dev/null ; then
+  GZIP=pigz
+  GUNZIP="pigz -d"
+else
+  echo "Install pigz for faster unzipping/zipping"
+fi
+
 DOWNLOAD_DIR="$1"
 TAR_FILE="$2/params.tar.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/params"
 SOURCE_URL="https://storage.googleapis.com/alphafold/alphafold_params_2022-03-02.tar"
-BASENAME=$(basename "${SOURCE_URL}")
 
 if [ -d "${ROOT_DIR}" ]; then
   echo "Skipping."
@@ -37,7 +46,7 @@ fi
 
 mkdir -p "${ROOT_DIR}"
 if ! [ -f "${TAR_FILE}" ]; then
-  python download.py -h storage.googleapis.com --ssl --uri /alphafold/alphafold_params_2021-07-14.tar | gzip > "${TAR_FILE}"
+  python download.py -h storage.googleapis.com --ssl --uri /alphafold/alphafold_params_2022-03-02.tar | ${GZIP} > "${TAR_FILE}"
 fi
 
-tar xzf "${TAR_FILE}" -C "${ROOT_DIR}" --no-seek
+${GUNZIP} -k "${TAR_FILE}" | tar xf - -C "${ROOT_DIR}" --no-seek

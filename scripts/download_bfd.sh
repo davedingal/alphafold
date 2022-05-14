@@ -24,6 +24,16 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
+# check if pigz is installed and use it if possible - significantly faster zipping and unzipping
+GZIP=gzip
+GUNZIP=gunzip
+if command -v pigz &> /dev/null ; then
+  GZIP=pigz
+  GUNZIP="pigz -d"
+else
+  echo "Install pigz for faster unzipping/zipping"
+fi
+
 DOWNLOAD_DIR="$1"
 TAR_FILE="$2/bfd.tar.gz"
 ROOT_DIR="${DOWNLOAD_DIR}/bfd"
@@ -42,4 +52,4 @@ if ! [ -f "${TAR_FILE}" ]; then
   python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/bfd_metaclust_clu_complete_id30_c90_final_seq.sorted_opt.tar.gz --ssl > ${TAR_FILE}
 fi
 
-tar xzf ${TAR_FILE} -C "${ROOT_DIR}"
+${GUNZIP} -k ${TAR_FILE} | tar xf - -C "${ROOT_DIR}"
