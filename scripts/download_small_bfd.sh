@@ -28,8 +28,8 @@ fi
 GZIP=gzip
 GUNZIP=gunzip
 if command -v pigz &> /dev/null ; then
-  GZIP=pigz
-  GUNZIP="pigz -d"
+  GZIP="pigz -c"
+  GUNZIP="pigz -c -d"
 else
   echo "Install pigz for faster unzipping/zipping"
 fi
@@ -49,4 +49,4 @@ if ! [ -f "${TAR_FILE}" ]; then
   python download.py --ssl -h storage.googleapis.com --uri /alphafold-databases/reduced_dbs/bfd-first_non_consensus_sequences.fasta.gz > "${TAR_FILE}"
 fi
 
-${GUNZIP} -k "${TAR_FILE}" > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"
+${GUNZIP} "${TAR_FILE}" > "${ROOT_DIR}/bfd-first_non_consensus_sequences.fasta"

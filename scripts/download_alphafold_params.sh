@@ -28,8 +28,8 @@ fi
 GZIP=gzip
 GUNZIP=gunzip
 if command -v pigz &> /dev/null ; then
-  GZIP=pigz
-  GUNZIP="pigz -d"
+  GZIP="pigz -c"
+  GUNZIP="pigz -c -d"
 else
   echo "Install pigz for faster unzipping/zipping"
 fi
@@ -44,9 +44,9 @@ if [ -d "${ROOT_DIR}" ]; then
   exit 0
 fi
 
-mkdir -p "${ROOT_DIR}"
 if ! [ -f "${TAR_FILE}" ]; then
   python download.py -h storage.googleapis.com --ssl --uri /alphafold/alphafold_params_2022-03-02.tar | ${GZIP} > "${TAR_FILE}"
 fi
 
-${GUNZIP} -k "${TAR_FILE}" | tar xf - -C "${ROOT_DIR}" --no-seek
+mkdir -p "${ROOT_DIR}"
+${GUNZIP} "${TAR_FILE}" | tar xf - -C "${ROOT_DIR}" --no-seek

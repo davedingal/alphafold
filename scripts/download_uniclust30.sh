@@ -28,8 +28,8 @@ fi
 GZIP=gzip
 GUNZIP=gunzip
 if command -v pigz &> /dev/null ; then
-  GZIP=pigz
-  GUNZIP="pigz -d"
+  GZIP="pigz -c"
+  GUNZIP="pigz -c -d"
 else
   echo "Install pigz for faster unzipping/zipping"
 fi
@@ -52,4 +52,4 @@ if ! [ -f "${TAR_FILE}" ]; then
   python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/uniclust30_2018_08_hhsuite.tar.gz --ssl > "${TAR_FILE}"
 fi
 
-${GUNZIP} -k "${TAR_FILE}" | tar xf - -C "${ROOT_DIR}"
+${GUNZIP} "${TAR_FILE}" | tar xf - -C "${ROOT_DIR}"

@@ -33,8 +33,8 @@ fi
 GZIP=gzip
 GUNZIP=gunzip
 if command -v pigz &> /dev/null ; then
-  GZIP=pigz
-  GUNZIP="pigz -d"
+  GZIP="pigz -c"
+  GUNZIP="pigz -c -d"
 else
   echo "Install pigz for faster unzipping/zipping"
 fi
@@ -54,7 +54,7 @@ fi
 if ! [ -f "${MMCIF_DIR}/download_completed" ]; then
   mkdir -p "${MMCIF_DIR}"
   if [ -f "${TAR_FILE}" ]; then
-    ${GUNZIP} -k "${TAR_FILE}" | tar xf - -C "${MMCIF_DIR}"
+    ${GUNZIP} "${TAR_FILE}" | tar xf - -C "${MMCIF_DIR}"
     exit 0
   fi
 

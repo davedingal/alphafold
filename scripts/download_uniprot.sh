@@ -34,8 +34,8 @@ fi
 GZIP=gzip
 GUNZIP=gunzip
 if command -v pigz &> /dev/null ; then
-  GZIP=pigz
-  GUNZIP="pigz -d"
+  GZIP="pigz -c"
+  GUNZIP="pigz -c -d"
 else
   echo "Install pigz for faster unzipping/zipping"
 fi

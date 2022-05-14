@@ -28,8 +28,8 @@ fi
 GZIP=gzip
 GUNZIP=gunzip
 if command -v pigz &> /dev/null ; then
-  GZIP=pigz
-  GUNZIP="pigz -d"
+  GZIP="pigz -c"
+  GUNZIP="pigz -c -d"
 else
   echo "Install pigz for faster unzipping/zipping"
 fi
@@ -50,4 +50,4 @@ if ! [ -f "${TAR_FILE}" ]; then
   curl -XGET "${SOURCE_URL}" > "${TAR_FILE}"
 fi
 
-${GUNZIP} -k "${TAR_FILE}" > "${ROOT_DIR}/uniref90.fasta"
+${GUNZIP} "${TAR_FILE}" > "${ROOT_DIR}/uniref90.fasta"

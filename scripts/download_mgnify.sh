@@ -28,8 +28,8 @@ fi
 GZIP=gzip
 GUNZIP=gunzip
 if command -v pigz &> /dev/null ; then
-  GZIP=pigz
-  GUNZIP="pigz -d"
+  GZIP="pigz -c"
+  GUNZIP="pigz -c -d"
 else
   echo "Install pigz for faster unzipping/zipping"
 fi
@@ -52,4 +52,4 @@ if ! [ -f "${TAR_FILE}" ]; then
   python download.py -h storage.googleapis.com --uri /alphafold-databases/casp14_versions/mgy_clusters_2018_12.fa.gz --ssl > "${TAR_FILE}"
 fi
 
-${GUNZIP} -k "${TAR_FILE}" > "${ROOT_DIR}/mgy_clusters_2018_12.fa"
+${GUNZIP} "${TAR_FILE}" > "${ROOT_DIR}/mgy_clusters_2018_12.fa"
