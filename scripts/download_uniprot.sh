@@ -25,11 +25,6 @@ if [[ $# -eq 0 ]]; then
     exit 1
 fi
 
-if ! command -v aria2c &> /dev/null ; then
-    echo "Error: aria2c could not be found. Please install aria2c (sudo apt install aria2)."
-    exit 1
-fi
-
 # check if pigz is installed and use it if possible - significantly faster zipping and unzipping
 GZIP=gzip
 GUNZIP=gunzip
