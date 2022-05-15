@@ -176,7 +176,10 @@ class DataPipeline:
     with open(pdb_hits_out_path, 'w') as f:
       f.write(pdb_templates_result)
 
-    self.pdb_template_hits = self.template_searcher.get_template_hits(output_string=pdb_templates_result, input_sequence=input_sequence)
+    pdb_template_hits = self.template_searcher.get_template_hits(output_string=pdb_templates_result, input_sequence=input_sequence)
+    self.templates_result = self.template_featurizer.get_templates(
+        query_sequence=input_sequence,
+        hits=pdb_template_hits)
     self.uniref90_msa = parsers.parse_stockholm(jackhmmer_uniref90_result['sto'])
 
 
@@ -237,10 +240,6 @@ class DataPipeline:
     mgnify_thread.join()
     bfd_thread.join()
 
-    templates_result = self.template_featurizer.get_templates(
-        query_sequence=input_sequence,
-        hits=pdb_template_hits)
-
     sequence_features = make_sequence_features(
         sequence=input_sequence,
         description=input_description,
@@ -255,6 +254,6 @@ class DataPipeline:
                  msa_features['num_alignments'][0])
     logging.info('Total number of templates (NB: this can include bad '
                  'templates and is later filtered to top 4): %d.',
-                 templates_result.features['template_domain_names'].shape[0])
+                 self.templates_result.features['template_domain_names'].shape[0])
 
-    return {**sequence_features, **msa_features, **templates_result.features}
+    return {**sequence_features, **msa_features, **self.templates_result.features}
