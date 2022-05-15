@@ -286,11 +286,11 @@ def predict_structure(
     ranked_order.append(model_name)
     ranked_output_path = os.path.join(output_dir, f'ranked_{idx}.pdb')
 
-    pdb_path = f'unrelaxed_{model_name}.pdb'
+    pdb_file = f'unrelaxed_{model_name}.pdb'
     if amber_relaxer:
-      pdb_path = f'relaxed_{model_name}.pdb'
+      pdb_file = f'relaxed_{model_name}.pdb'
 
-    with open(pdb_path, 'r') as f_in:
+    with open(os.path.join(output_dir, pdb_file), 'r') as f_in:
       with open(ranked_output_path, 'w') as f_out:
         f_out.write(f_in.read())
 
