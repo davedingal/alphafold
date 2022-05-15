@@ -147,7 +147,7 @@ class DataPipeline:
     self.uniref_max_hits = uniref_max_hits
     self.use_precomputed_msas = use_precomputed_msas
 
-  def run_jackhmmer_uniref90(self, input_fasta_path: str, msa_output_dir: str):
+  def run_jackhmmer_uniref90(self, input_fasta_path: str, msa_output_dir: str, input_sequence: str):
     uniref90_out_path = os.path.join(msa_output_dir, 'uniref90_hits.sto')
     jackhmmer_uniref90_result = run_msa_tool(
         msa_runner=self.jackhmmer_uniref90_runner,
@@ -224,7 +224,7 @@ class DataPipeline:
     input_description = input_descs[0]
     num_res = len(input_sequence)
 
-    uniref90_thread = threading.Thread(target=self.run_jackhmmer_uniref90, args=(input_fasta_path, msa_output_dir))
+    uniref90_thread = threading.Thread(target=self.run_jackhmmer_uniref90, args=(input_fasta_path, msa_output_dir, input_sequence))
     uniref90_thread.start()
 
     mgnify_thread = threading.Thread(target=self.run_jackhmmer_mgnify, args=(input_fasta_path, msa_output_dir))
