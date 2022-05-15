@@ -242,7 +242,8 @@ def predict_structure(
 
     # Add the predicted LDDT in the b-factor column.
     # Note that higher predicted LDDT value means higher model confidence.
-    plddt_b_factors = np.repeat(plddt[:, None], residue_constants.atom_type_num, axis=-1)
+    plddt_b_factors = np.repeat(
+      plddt[:, None], residue_constants.atom_type_num, axis=-1)
     unrelaxed_protein = protein.from_prediction(
         features=processed_feature_dict,
         result=prediction_result,
@@ -267,28 +268,31 @@ def predict_structure(
       with open(relaxed_output_path, 'w') as f:
         f.write(relaxed_pdb_str)
 
-  # ensure that all plddts have been loaded before ranking the outputs
+  # ensure that all ranking_confidences have been loaded before ranking the outputs
   for model_name, model_runner in model_runners.items():
-    if model_name in plddts:
+    if model_name in ranking_confidences:
       continue
 
-    logging.info('Loading plddt data for %s', model_name)
+    logging.info('Loading ranking_confidence data for %s', model_name)
     result_output_path = os.path.join(output_dir, f'result_{model_name}.pkl')
     with open(result_output_path, 'rb') as f:
       prediction_result = pickle.load(f)
-      plddts[model_name] = np.mean(prediction_result['plddt'])
+      ranking_confidences[model_name] = prediction_result['ranking_confidence']
 
   # Rank by model confidence and write out relaxed PDBs in rank order.
   ranked_order = []
-  for idx, (model_name, _) in enumerate(sorted(ranking_confidences.items(), key=lambda x: x[1], reverse=True)):
+  for idx, (model_name, _) in enumerate(
+    sorted(ranking_confidences.items(), key=lambda x: x[1], reverse=True)):
     ranked_order.append(model_name)
-
     ranked_output_path = os.path.join(output_dir, f'ranked_{idx}.pdb')
-    with open(ranked_output_path, 'w') as f:
-      if amber_relaxer:
-        f.write(relaxed_pdbs[model_name])
-      else:
-        f.write(unrelaxed_pdbs[model_name])
+
+    pdb_path = f'unrelaxed_{model_name}.pdb'
+    if amber_relaxer:
+      pdb_path = f'relaxed_{model_name}.pdb'
+
+    with open(pdb_path, 'r') as f_in:
+      with open(ranked_output_path, 'w') as f_out:
+        f_out.write(f_in.read())
 
   ranking_output_path = os.path.join(output_dir, 'ranking_debug.json')
   with open(ranking_output_path, 'w') as f:
